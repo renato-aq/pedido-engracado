@@ -3,7 +3,12 @@
 import Image from "next/image";
 import { PointerEvent, useCallback, useRef, useState } from "react";
 
-import { getEscapedButtonPosition, Point } from "./no-button-motion";
+import {
+  getEscapedButtonPosition,
+  getEscapingButtonStyle,
+  Point,
+  Size
+} from "./no-button-motion";
 
 const initialNoPosition = {
   x: 0,
@@ -15,6 +20,7 @@ export default function Home() {
   const [noPosition, setNoPosition] = useState<Point>(initialNoPosition);
   const noButtonRef = useRef<HTMLButtonElement>(null);
   const noButtonInitialized = useRef(false);
+  const noButtonSize = useRef<Size | null>(null);
 
   const moveNoButton = useCallback((event: PointerEvent<HTMLElement>) => {
     const button = noButtonRef.current;
@@ -28,6 +34,11 @@ export default function Home() {
     }
 
     const buttonRect = button.getBoundingClientRect();
+    noButtonSize.current ??= {
+      width: buttonRect.width,
+      height: buttonRect.height
+    };
+
     const currentPosition = noButtonInitialized.current
       ? noPosition
       : {
@@ -45,10 +56,7 @@ export default function Home() {
           width: window.innerWidth,
           height: window.innerHeight
         },
-        button: {
-          width: buttonRect.width,
-          height: buttonRect.height
-        }
+        button: noButtonSize.current
       })
     );
   }, [noPosition]);
@@ -102,10 +110,10 @@ export default function Home() {
             className={noButtonInitialized.current ? "noButton isEscaping" : "noButton"}
             style={
               noButtonInitialized.current
-                ? {
-                    left: noPosition.x,
-                    top: noPosition.y
-                  }
+                ? getEscapingButtonStyle({
+                    position: noPosition,
+                    button: noButtonSize.current ?? undefined
+                  })
                 : undefined
             }
             type="button"

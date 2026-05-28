@@ -18,6 +18,18 @@ export type EscapeButtonInput = {
   stepDistance?: number;
 };
 
+export type EscapeButtonStyleInput = {
+  position: Point;
+  button?: Size;
+};
+
+export type EscapeButtonStyle = {
+  left: number;
+  top: number;
+  width?: number;
+  height?: number;
+};
+
 const clamp = (value: number, min: number, max: number) => {
   if (max < min) {
     return min;
@@ -104,4 +116,20 @@ export function getEscapedButtonPosition({
     nextPosition.y >= maxY;
 
   return hitsEdge ? getFarthestPosition() : nextPosition;
+}
+
+export function getEscapingButtonStyle({
+  position,
+  button
+}: EscapeButtonStyleInput): EscapeButtonStyle {
+  return {
+    left: position.x,
+    top: position.y,
+    ...(button
+      ? {
+          width: button.width,
+          height: button.height
+        }
+      : {})
+  };
 }

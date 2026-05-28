@@ -108,7 +108,6 @@ h1 {
 .noButton {
   background: #fffdf8;
   color: var(--rose);
-  pointer-events: none;
   box-shadow: inset 0 0 0 2px rgba(181, 72, 93, 0.35);
 }
 

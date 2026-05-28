@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getEscapedButtonPosition } from "./no-button-motion";
+import { getEscapedButtonPosition, getEscapingButtonStyle } from "./no-button-motion";
 
 test("keeps the escaped button position inside the viewport", () => {
   const position = getEscapedButtonPosition({
@@ -85,4 +85,18 @@ test("teleports to the farthest point when the ten pixel step would hit the edge
   });
 
   assert.deepEqual(nextPosition, { x: 18, y: 634 });
+});
+
+test("keeps the escaping button at a stable measured size", () => {
+  const style = getEscapingButtonStyle({
+    position: { x: 42, y: 88 },
+    button: { width: 260, height: 62 }
+  });
+
+  assert.deepEqual(style, {
+    left: 42,
+    top: 88,
+    width: 260,
+    height: 62
+  });
 });
