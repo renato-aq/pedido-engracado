@@ -6,9 +6,13 @@ import { PointerEvent, useCallback, useRef, useState } from "react";
 import {
   getEscapedButtonPosition,
   getEscapingButtonStyle,
+  getShrinkingButtonStyle,
   Point,
   Size
 } from "./no-button-motion";
+
+const mobileBreakpoint = 768;
+const maxNoClickAttempts = 4;
 
 const initialNoPosition = {
   x: 0,
@@ -18,6 +22,7 @@ const initialNoPosition = {
 export default function Home() {
   const [accepted, setAccepted] = useState(false);
   const [noPosition, setNoPosition] = useState<Point>(initialNoPosition);
+  const [noClickAttempts, setNoClickAttempts] = useState(0);
   const noButtonRef = useRef<HTMLButtonElement>(null);
   const noButtonInitialized = useRef(false);
   const noButtonSize = useRef<Size | null>(null);
@@ -30,6 +35,10 @@ export default function Home() {
     };
 
     if (!button) {
+      return;
+    }
+
+    if (window.innerWidth <= mobileBreakpoint) {
       return;
     }
 
@@ -64,6 +73,20 @@ export default function Home() {
   const rejectNoButton = useCallback(
     (event: PointerEvent<HTMLButtonElement>) => {
       event.preventDefault();
+
+      if (window.innerWidth <= mobileBreakpoint) {
+        const buttonRect = event.currentTarget.getBoundingClientRect();
+        noButtonSize.current ??= {
+          width: buttonRect.width,
+          height: buttonRect.height
+        };
+
+        setNoClickAttempts((attempts) =>
+          Math.min(attempts + 1, maxNoClickAttempts)
+        );
+        return;
+      }
+
       moveNoButton(event);
     },
     [moveNoButton]
@@ -93,6 +116,28 @@ export default function Home() {
     );
   }
 
+  const noButtonStyle =
+    noClickAttempts > 0 && noButtonSize.current
+      ? {
+          ...getShrinkingButtonStyle({
+            button: noButtonSize.current,
+            attempts: noClickAttempts,
+            maxAttempts: maxNoClickAttempts
+          }),
+          minWidth: 0,
+          overflow: "hidden",
+          padding: 0
+        }
+      : noButtonInitialized.current
+        ? getEscapingButtonStyle({
+            position: noPosition,
+            button: noButtonSize.current ?? undefined
+          })
+        : undefined;
+  const noButtonClassName = noButtonInitialized.current
+    ? "noButton isEscaping"
+    : "noButton";
+
   return (
     <main className="page invitationPage" onPointerMove={moveNoButton}>
       <section className="invitePanel">
@@ -107,15 +152,8 @@ export default function Home() {
           </button>
           <button
             ref={noButtonRef}
-            className={noButtonInitialized.current ? "noButton isEscaping" : "noButton"}
-            style={
-              noButtonInitialized.current
-                ? getEscapingButtonStyle({
-                    position: noPosition,
-                    button: noButtonSize.current ?? undefined
-                  })
-                : undefined
-            }
+            className={noButtonClassName}
+            style={noButtonStyle}
             type="button"
             onPointerEnter={moveNoButton}
             onPointerDown={rejectNoButton}

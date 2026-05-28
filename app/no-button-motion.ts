@@ -30,6 +30,19 @@ export type EscapeButtonStyle = {
   height?: number;
 };
 
+export type ShrinkingButtonStyleInput = {
+  button: Size;
+  attempts: number;
+  maxAttempts?: number;
+};
+
+export type ShrinkingButtonStyle = {
+  width: number;
+  height: number;
+  opacity?: number;
+  pointerEvents?: "none";
+};
+
 const clamp = (value: number, min: number, max: number) => {
   if (max < min) {
     return min;
@@ -132,4 +145,24 @@ export function getEscapingButtonStyle({
         }
       : {})
   };
+}
+
+export function getShrinkingButtonStyle({
+  button,
+  attempts,
+  maxAttempts = 4
+}: ShrinkingButtonStyleInput): ShrinkingButtonStyle {
+  const visibleRatio = clamp((maxAttempts - attempts) / maxAttempts, 0, 1);
+  const size = {
+    width: button.width * visibleRatio,
+    height: button.height * visibleRatio
+  };
+
+  return visibleRatio === 0
+    ? {
+        ...size,
+        opacity: 0,
+        pointerEvents: "none"
+      }
+    : size;
 }

@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getEscapedButtonPosition, getEscapingButtonStyle } from "./no-button-motion";
+import {
+  getEscapedButtonPosition,
+  getEscapingButtonStyle,
+  getShrinkingButtonStyle
+} from "./no-button-motion";
 
 test("keeps the escaped button position inside the viewport", () => {
   const position = getEscapedButtonPosition({
@@ -98,5 +102,28 @@ test("keeps the escaping button at a stable measured size", () => {
     top: 88,
     width: 260,
     height: 62
+  });
+});
+
+test("shrinks the mobile button until it disappears on the fourth click", () => {
+  const button = { width: 260, height: 62 };
+
+  assert.deepEqual(getShrinkingButtonStyle({ button, attempts: 1 }), {
+    width: 195,
+    height: 46.5
+  });
+  assert.deepEqual(getShrinkingButtonStyle({ button, attempts: 2 }), {
+    width: 130,
+    height: 31
+  });
+  assert.deepEqual(getShrinkingButtonStyle({ button, attempts: 3 }), {
+    width: 65,
+    height: 15.5
+  });
+  assert.deepEqual(getShrinkingButtonStyle({ button, attempts: 4 }), {
+    width: 0,
+    height: 0,
+    opacity: 0,
+    pointerEvents: "none"
   });
 });
